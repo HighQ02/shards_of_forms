@@ -1,23 +1,22 @@
+// main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flame/game.dart';
+import 'game/pause_menu.dart';
 import 'game/my_game.dart';
+import 'menu/main_menu.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Блокировка только горизонтальной ориентации
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-
   runApp(const GameApp());
 }
 
 class GameApp extends StatelessWidget {
   const GameApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,44 +26,55 @@ class GameApp extends StatelessWidget {
   }
 }
 
-class MainMenu extends StatelessWidget {
-  const MainMenu({super.key});
+// --- ВОТ КОД, КОТОРЫЙ ЧИНИТ КРЭШ ---
+class GamePage extends StatefulWidget {
+  const GamePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blueAccent,
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-            textStyle: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const GamePage()),
-            );
-          },
-          child: const Text("START"),
-        ),
-      ),
-    );
-  }
+  State<GamePage> createState() => _GamePageState();
 }
 
-class GamePage extends StatelessWidget {
-  const GamePage({super.key});
+class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
+  MyGame? game;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Восстанавливаем игру при возвращении в приложение
+      game?.resumeEngine();
+    } else if (state == AppLifecycleState.paused) {
+      // Приостанавливаем игру при сворачивании приложения
+      game?.pauseEngine();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async => false, // блокируем возврат свайпом
-      child: Scaffold(body: GameWidget(game: MyGame())),
+      onWillPop: () async => false,
+      child: Scaffold(
+        body: GameWidget.controlled(
+          gameFactory: () {
+            game = MyGame();
+            return game!;
+          },
+          overlayBuilderMap: {
+            'PauseMenu': (context, game) => PauseMenu(game: game as MyGame),
+          },
+        ),
+      ),
     );
   }
 }

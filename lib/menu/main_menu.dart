@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:video_player/video_player.dart';
+import 'package:flame_audio/flame_audio.dart';
 import '../game/my_game.dart';
+import '../main.dart'; // Добавляем импорт GamePage
 
 class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
@@ -15,14 +17,20 @@ class _MainMenuState extends State<MainMenu> {
 
   @override
   void initState() {
+    FlameAudio.bgm.initialize();
+    FlameAudio.bgm.play('menu_music.mp3');
+
     super.initState();
-    _controller = VideoPlayerController.asset('assets/videos/background.mp4')
-      ..initialize().then((_) {
-        _controller.setLooping(true);
-        _controller.setVolume(0);
-        _controller.play();
-        setState(() {});
-      });
+    _controller =
+        VideoPlayerController.asset(
+            'assets/videos/Hollow_Knight_Silksong_Animation_Creation.mp4',
+          )
+          ..initialize().then((_) {
+            _controller.setLooping(true);
+            _controller.setVolume(0);
+            _controller.play();
+            setState(() {});
+          });
   }
 
   @override
@@ -33,27 +41,58 @@ class _MainMenuState extends State<MainMenu> {
 
   Widget _menuButton(String text, VoidCallback onPressed) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: ElevatedButton(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: OutlinedButton(
         onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blueAccent.withOpacity(0.8),
-          padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Colors.white70, width: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(15),
           ),
-          elevation: 6,
+          backgroundColor: Colors.transparent,
         ),
         child: Text(
           text,
           style: const TextStyle(
-            fontSize: 24,
+            fontSize: 18,
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
           ),
         ),
       ),
+    );
+  }
+
+  void _showStartDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.black87,
+          title: const Text(
+            'Выбор игры',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _menuButton("Новая игра", () {
+                Navigator.of(context).pop();
+                FlameAudio.bgm.stop();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const GamePage()),
+                );
+              }),
+              _menuButton("Продолжить", () {
+                Navigator.of(context).pop();
+              }),
+              _menuButton("Отмена", () => Navigator.of(context).pop()),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -62,7 +101,6 @@ class _MainMenuState extends State<MainMenu> {
     return Scaffold(
       body: Stack(
         children: [
-          /// 🎬 Видео-фон
           if (_controller.value.isInitialized)
             SizedBox.expand(
               child: FittedBox(
@@ -73,43 +111,28 @@ class _MainMenuState extends State<MainMenu> {
                   child: VideoPlayer(_controller),
                 ),
               ),
-            )
-          else
-            const Center(child: CircularProgressIndicator()),
-
-          /// 🌫 Полупрозрачная маска для читаемости текста
+            ),
           Container(color: Colors.black.withOpacity(0.4)),
-
-          /// 🕹 Кнопки меню
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _menuButton("START GAME", () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => GameWidget(game: MyGame()),
-                    ),
-                  );
-                }),
-                _menuButton("OPTIONS", () {
-                  // позже добавим окно настроек
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Options menu coming soon!")),
-                  );
-                }),
-                _menuButton("ACHIEVEMENTS", () {
-                  // позже добавим достижения
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Achievements coming soon!")),
-                  );
-                }),
+                const Text(
+                  "Shards Of Forms",
+                  style: TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 50),
+                _menuButton("START GAME", _showStartDialog),
+                _menuButton("OPTIONS", () {}),
+                _menuButton("ACHIEVEMENTS", () {}),
                 _menuButton("QUIT GAME", () {
-                  // закрываем приложение
-                  Future.delayed(const Duration(milliseconds: 200), () {
-                    Navigator.of(context).pop();
-                  });
+                  FlameAudio.bgm.stop();
+                  Navigator.pop(context);
                 }),
               ],
             ),

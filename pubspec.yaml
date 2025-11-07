@@ -33,6 +33,9 @@ dependencies:
   flame: ^1.17.0
   video_player: ^2.9.1
   flame_splash_screen: ^0.3.1+2
+  audioplayers: ^3.0.1
+  flame_audio: ^1.4.0
+  google_fonts: ^4.0.4
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -56,13 +59,21 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-      - assets/images/background.jpeg
-      - assets/images/player_idle.png
-      - assets/images/player_run.png
-      - assets/images/player_jump.png
+      - assets/images/location1.png
+      - assets/images/location2.png
+
+      - assets/images/hornet_atlas.png
+      - assets/images/hornet_idle.png
+      - assets/images/hornet_walk.png
+      - assets/images/hornet_jump_anticipate.png
+      - assets/images/hornet_jump.png
+      - assets/images/hornet_attack.png
 
       - assets/videos/background.mp4
+      - assets/videos/Hollow_Knight_Silksong_Animation_Creation.mp4
 
+      - assets/audio/menu_music.mp3
+      - assets/audio/game_music.mp3
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
