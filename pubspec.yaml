@@ -2,7 +2,7 @@ name: shards_of_forms
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -37,7 +37,6 @@ dependencies:
   flame_audio: ^1.4.0
   google_fonts: ^4.0.4
 
-
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -59,21 +58,25 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-      - assets/images/location1.png
-      - assets/images/location2.png
+    - assets/images/location1.png
+    - assets/images/location2.png
 
-      - assets/images/hornet_atlas.png
-      - assets/images/hornet_idle.png
-      - assets/images/hornet_walk.png
-      - assets/images/hornet_jump_anticipate.png
-      - assets/images/hornet_jump.png
-      - assets/images/hornet_attack.png
+    - assets/images/hornet_atlas.png
+    - assets/images/hornet_idle.png
+    - assets/images/hornet_walk.png
+    - assets/images/hornet_jump_anticipate.png
+    - assets/images/hornet_jump.png
+    - assets/images/hornet_attack.png
 
-      - assets/videos/background.mp4
-      - assets/videos/Hollow_Knight_Silksong_Animation_Creation.mp4
+    - assets/images/enemies/Baldur.png
+    - assets/images/enemies/Husk Hornhead.png
+    - assets/images/enemies/Mosscreep.png
 
-      - assets/audio/menu_music.mp3
-      - assets/audio/game_music.mp3
+    - assets/videos/background.mp4
+    - assets/videos/Hollow_Knight_Silksong_Animation_Creation.mp4
+
+    - assets/audio/menu_music.mp3
+    - assets/audio/game_music.mp3
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

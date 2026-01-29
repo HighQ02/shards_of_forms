@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flame/game.dart';
 import 'game/pause_menu.dart';
 import 'game/my_game.dart';
+import 'game/game_hud.dart';
 import 'menu/main_menu.dart';
 
 void main() async {
@@ -26,7 +27,6 @@ class GameApp extends StatelessWidget {
   }
 }
 
-// --- ВОТ КОД, КОТОРЫЙ ЧИНИТ КРЭШ ---
 class GamePage extends StatefulWidget {
   const GamePage({super.key});
 
@@ -65,14 +65,19 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        body: GameWidget.controlled(
-          gameFactory: () {
-            game = MyGame();
-            return game!;
-          },
-          overlayBuilderMap: {
-            'PauseMenu': (context, game) => PauseMenu(game: game as MyGame),
-          },
+        body: Stack(
+          children: [
+            GameWidget.controlled(
+              gameFactory: () {
+                game = MyGame();
+                return game!;
+              },
+              overlayBuilderMap: {
+                'PauseMenu': (context, game) => PauseMenu(game: game as MyGame),
+              },
+            ),
+            if (game != null) GameHUD(game: game!),
+          ],
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'joystick.dart';
 import 'my_game.dart';
+import 'attack_hitbox.dart';
 
 class Player extends SpriteAnimationComponent
     with HasGameRef<MyGame>, CollisionCallbacks {
@@ -33,6 +34,15 @@ class Player extends SpriteAnimationComponent
   double maxJumpHoldTime = 0.15;
   double jumpHoldTimer = 0.0;
   bool canJumpHold = false;
+
+  // --- Система HP и XP ---
+  double health = 100;
+  double maxHealth = 100;
+  double attackDamage = 20;
+
+  int level = 1;
+  double experience = 0;
+  double experienceToLevelUp = 100;
 
   Player({
     required this.joystick,
@@ -105,7 +115,6 @@ class Player extends SpriteAnimationComponent
       ),
     );
 
-    // 5. Атака (7 кадров, 2 ряда) - Эта логика остается, т.к. она верная
     final frameWidth = attackImage.width / 6.0;
     final frameHeight = attackImage.height / 2.0;
     final frameSize = Vector2(frameWidth, frameHeight);
@@ -225,6 +234,19 @@ class Player extends SpriteAnimationComponent
 
     // 4.3. ПРОВЕРКА ВВОДА (Input)
     if (attackButton.isPressed && isOnGround) {
+      if (!isAttacking) {
+        // Создаём хитбокс для атаки
+        final attackRange = 120.0; // Диапазон атаки
+        final hitboxX =
+            position.x + (scale.x < 0 ? -attackRange / 2 : attackRange / 2);
+
+        final hitbox = AttackHitbox(player: this)
+          ..position = Vector2(hitboxX, position.y)
+          ..size = Vector2(attackRange, size.y);
+
+        gameRef.gameWorld!.add(hitbox);
+      }
+
       isAttacking = true;
       animation = attackAnimation;
       animationTicker?.reset();
@@ -282,5 +304,52 @@ class Player extends SpriteAnimationComponent
       position.x = gameRef.worldWidth - halfW;
     }
     */
+  }
+
+  // --- HP система ---
+  void takeDamage(double dmg) {
+    health -= dmg;
+    if (health < 0) {
+      health = 0;
+      // Можно добавить логику смерти игрока
+    }
+  }
+
+  void heal(double amount) {
+    health += amount;
+    if (health > maxHealth) {
+      health = maxHealth;
+    }
+  }
+
+  double getHealthPercent() {
+    return (health / maxHealth).clamp(0, 1);
+  }
+
+  // --- XP система ---
+  void addExperience(double xp) {
+    experience += xp;
+
+    // Проверяем уровень вверх
+    while (experience >= experienceToLevelUp) {
+      experience -= experienceToLevelUp;
+      levelUp();
+    }
+  }
+
+  void levelUp() {
+    level++;
+    // Увеличиваем требуемый опыт для следующего уровня
+    experienceToLevelUp *= 1.15; // 15% увеличение
+
+    // Улучшаем характеристики
+    maxHealth += 20;
+    health = maxHealth;
+    attackDamage += 5;
+    moveSpeed += 10;
+  }
+
+  double getExperiencePercent() {
+    return (experience / experienceToLevelUp).clamp(0, 1);
   }
 }

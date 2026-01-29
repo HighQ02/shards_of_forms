@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'player.dart';
 import 'joystick.dart';
-import '../main.dart';
+import 'enemy_manager.dart';
 
 class MyGame extends FlameGame with HasCollisionDetection {
   // Переименовали в gameWorld, чтобы не конфликтовать с встроенным world
@@ -12,6 +12,7 @@ class MyGame extends FlameGame with HasCollisionDetection {
   late SpriteComponent background;
   late RectangleComponent ground;
   late Player player;
+  late EnemyManager enemyManager;
 
   late Joystick joystick;
   late JumpButton jumpButton;
@@ -36,6 +37,10 @@ class MyGame extends FlameGame with HasCollisionDetection {
     // музыка (опционально)
     FlameAudio.bgm.initialize();
     // FlameAudio.bgm.play('game_music.mp3'); // раскомментируй если есть аудио
+
+    // Инициализируем EnemyManager в начале
+    enemyManager = EnemyManager();
+    add(enemyManager);
 
     // создаём UI (добавляются в игровую сцену, но не в gameWorld)
     joystick = Joystick()..priority = 100;
@@ -62,6 +67,14 @@ class MyGame extends FlameGame with HasCollisionDetection {
   }
 
   Future<void> _buildWorld(int mapNumber) async {
+    // Очищаем старых врагов при смене карты
+    for (var enemy in enemyManager.getEnemies().toList()) {
+      if (enemy.parent != null) {
+        enemy.removeFromParent();
+      }
+    }
+    enemyManager.enemies.clear();
+
     if (gameWorld != null && gameWorld!.parent != null) {
       gameWorld!.removeFromParent();
     }
@@ -156,7 +169,6 @@ class MyGame extends FlameGame with HasCollisionDetection {
       add(gameWorld!);
     }
 
-    // Сброс камеры (смещение мира)
     cameraOffsetX = 0;
     gameWorld!.position = Vector2(-cameraOffsetX, 0);
   }
@@ -167,12 +179,12 @@ class MyGame extends FlameGame with HasCollisionDetection {
       _isLoadingMap = true;
       try {
         currentMap = 2;
-        // Удаляем игрока из старого мира (он будет добавлен в новом внутри _buildWorld)
+
         if (player.parent != null) {
           player.removeFromParent();
         }
         await _buildWorld(2);
-        // игрок уже добавлен в _buildWorld, установим позицию чуть справа
+
         player.position = Vector2(50, worldHeight - 200);
       } finally {
         _isLoadingMap = false;
@@ -191,7 +203,7 @@ class MyGame extends FlameGame with HasCollisionDetection {
         }
         await _buildWorld(1);
         player.position = Vector2(worldWidth - 150, worldHeight - 200);
-        // при возврате можно сместить камеру в конец мира, чтобы игрок оказался справа
+
         cameraOffsetX = (worldWidth > size.x) ? (worldWidth - size.x) : 0.0;
         gameWorld!.position = Vector2(-cameraOffsetX, 0);
       } finally {
@@ -240,6 +252,7 @@ class MyGame extends FlameGame with HasCollisionDetection {
 
       // 2. Переход на Карту 2 (справа)
       if (player.position.x > worldWidth - 30) {
+        // ignore: unawaited_futures
         loadNextMap();
       }
     } else if (currentMap == 2) {
@@ -247,6 +260,7 @@ class MyGame extends FlameGame with HasCollisionDetection {
 
       // 1. Переход на Карту 1 (слева)
       if (player.position.x < 30) {
+        // ignore: unawaited_futures
         loadPreviousMap();
       }
 
